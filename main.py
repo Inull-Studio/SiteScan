@@ -3,6 +3,7 @@
 # Version: 1.5
 
 # 引入模块、包部分
+from lib2to3.pygram import python_grammar_no_print_statement
 from request import *   # 获取返回内容
 from common import *
 from threading import Thread
@@ -16,15 +17,14 @@ warnings.filterwarnings("ignore")
 # 定义的常量、变量
 t = []  # 线程组
 logo = '''\033[1;32m
-  ____   *     _                ____ 
+  ____   *     _                ____
  /___ |  _   _| |_    ___ ,   /___ |  ____   _____    _____
- \_  \  | | |__ __| / ___, |  \_  \  / ___/ /  __\ \  | ___ \ 
+ \_  \  | | |__ __| / ___, |  \_  \  / ___/ /  __\ \  | ___ \\
   __) | | |   | |   | \__|_|   __) | | (__  | |__| |  | | | |
 /____/  |_|   |__|  \_'____\ /____/  \____\ \ ____\ \ |_| |_|
 
-                                                        \033[1;36mBy:kracer
-                                                        \033[1;36mGithub:https://github.com/kracer127\033[0m
-'''
+                                                        \033[1;36mBy:kracer (basket_ball edit)
+                                                        \033[1;36mGithub:https://github.com/kracer127 (https://github.com/basket-ball)\033[0m'''
 
 
 # 对allDict的数据进行清空处理
@@ -49,7 +49,7 @@ def clearAll():
 
 
 # 多线程解决批查询(暂未实现，不稳定)
-def startMainThread(ip_url):
+def startMainThread(ip_url, ports, maxthread):
     ''' 判断网址是否有误 '''    ## 可改进地方 ##
     test = processUrl(ip_url)
     if test == []:
@@ -58,8 +58,13 @@ def startMainThread(ip_url):
     ''' 正确进入主函数查询 '''
     url = processUrl(ip_url)[0]
     subDomain = processUrl(ip_url)[-1]
-    if isAlive(url) == True:  # 检测用户输入网址是否有效
-        main(url, subDomain)
+    if isAlive(url):  # 检测用户输入网址是否有效
+        main(url, subDomain, ports, maxthread)
+    elif isIP(url): # 检测是否为IP地址
+        print('\033[1;35m[-] 检测 {} 为IP地址!\033[0m'.format(url))
+        allDict['nowIP'].append(url+'::')
+        request(url).pangZhan()
+        request(url).getPorts(ports, maxthread)
     else:
         print('\033[1;35m[-] 当前网址 {0} 不可访问, 尝试根域名信息查询!!\033[0m'.format(url))
         request(subDomain).IP138()
@@ -75,7 +80,7 @@ def startMainThread(ip_url):
 
 
 # 主函数入口
-def main(url, subDomain):
+def main(url, subDomain, ports, maxthread):
     tasks = []
     print('[+] ============ 网址：{0} 检测任务开启, 预估需要3~5min ============'.format(url))
 
@@ -129,7 +134,7 @@ def main(url, subDomain):
         keyURL_list = []
         for k in domain:
             if ('=' in k) and ('?' in k):
-               keyURL_list.append(k)
+                keyURL_list.append(k)
         if len(keyURL_list) >= 2:
             request(keyURL_list[0]).detectWaf()
             request(keyURL_list[1]).detectWaf()
@@ -149,10 +154,10 @@ def main(url, subDomain):
     """ 入口三: 不存在CDN下网站IP资产清查 """
     # 1.进入<PangZhan函数>获取当前域名IP下的同服务器网站
     t12 = request(url).pangZhan()
-    t12_1 = Thread(target=t12)
+    t12_1 = Thread(target = t12)
     tasks.append(t12_1)
     # 2.进入<getPorts函数>获取网站开发端口信息
-    t13 = request(url).getPorts()
+    t13 = request(url).getPorts(ports, maxthread)
     t13_1 = Thread(target=t13)
     tasks.append(t13_1)
 
@@ -166,9 +171,23 @@ def main(url, subDomain):
 if __name__ == '__main__':
     print(logo)
     urlList = []
+    ports = default_ports
     args = parse_args()
+    maxthread = default_thread
     if args.url:
         urlList.append(args.url)
+    if args.ports:
+        if ',' in args.ports:
+            tmp_p = args.ports.split(',')
+            for p in tmp_p:
+                if '-' in p:
+                    ports.extend([x for x in range(int(p.split('-')[0]), int(p.split('-')[1]) + 1)])
+                else:
+                    ports.append(int(p))
+        elif '-' in args.ports:
+            ports = [x for x in range(int(args.ports.split('-')[0]), int(args.ports.split('-')[1]) + 1)]
+        else:
+            ports.append(int(args.ports))
     if args.file:
         try:
             with open(args.file, 'r', encoding='utf-8') as u:
@@ -179,9 +198,11 @@ if __name__ == '__main__':
                     print('\033[1;31m[-] 文件错误，请检查后再试！\033[0m')
         except Exception as e:
             print('\033[1;31m[-] 文件错误，请检查后再试！\033[0m')
+    if args.thread:
+        maxthread = args.thread
     start = time.time()
     for ip_url in urlList:
-        startMainThread(ip_url)
+        startMainThread(ip_url, ports, maxthread)
     end = time.time()
     print("\033[1;36m[*] 本次检测共消耗时间:{:.2f}s\033[0m".format(end - start))
 

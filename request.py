@@ -3,16 +3,15 @@
 # Version: 1.5
 
 # 引入模块、包部分
-from gevent import monkey
-monkey.patch_all()  # 解决socket库是阻塞式问题
 from lib.whois import whois
-import json, time
+import json, time, tqdm
+from concurrent import futures
 from bs4 import BeautifulSoup as bs
 from common import *
 from config import *
 from Third.JSFinder import *
 from Third.wafw00f import entrance
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
@@ -504,6 +503,8 @@ class request:
                 times -= 1
                 allDict['error'].append(self.url+'-->'+'PangZhan获取旁站失败!'+'-->'+str(e))
                 print('\033[1;31m[-] 旁站信息查询失败!\033[0m')
+            except KeyboardInterrupt:
+                sys.exit(1)
             finally:
                 if (flag2 != True) and (times >= 1):
                     self.pangZhan()
@@ -512,66 +513,21 @@ class request:
 
 
     # Step12: wlphp.com的api获取网站开发端口信息
-    def getPorts(self):
+    def getPorts(self, ports:list[int], maxthread):
         if not cdnFlag:
             global times
+            complete=0.0
             flag11 = False
             getStrIp = allDict['nowIP'][0].split("::")[0]
             result = []
             print('[*] 正在探测端口开放情况(时间稍长)......')
-            class brutePorts():
-                def __init__(self, ip):
-                    self.url_port = 'http://duankou.wlphp.com/api.php'
-                    self.ip = ip
-                    self.header_port = {
-                        'Host': 'duankou.wlphp.com',
-                        'Sec-Ch-Ua': '"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
-                        'Accept': 'application/json, text/javascript, */*; q=0.01',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Sec-Ch-Ua-Mobile': '?0',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
-                        'Sec-Ch-Ua-Platform': 'Windows',
-                        'Origin': 'https://duankou.wlphp.com',
-                        'Sec-Fetch-Site': 'same-origin',
-                        'Sec-Fetch-Mode': 'cors',
-                        'Sec-Fetch-Dest': 'empty',
-                        'Referer': 'https://duankou.wlphp.com/',
-                        'Accept-Encoding': 'gzip, deflate',
-                        'Accept-Language': 'zh-CN,zh;q=0.9'
-                    }
-                    self.tasks = Queue()
-                    for i in ports:
-                        data3 = {'i': ip, 'p': int(i)}
-                        self.tasks.put_nowait(data3)
-
-                def bruteMain(self):
-                    while not self.tasks.empty():
-                        data4 = self.tasks.get_nowait()
-                        self.msg()
-                        try:
-                            r = requests.post(url=self.url_port, headers=self.header_port, data=data4, proxies=proxies, verify=False)
-                            r1 = r.text
-                            if 'Openning' in str(r1):
-                                allDict['ports'].append(str(data4['p']))
-                        except Exception as e:
-                            self.tasks.put_nowait(data4)
-
-                def msg(self):
-                    complete = round((((21043-self.tasks.qsize())/21043)*100), 2)
-                    msg ='\033[1;34m[+] ALL: 1224 | Thread: 500 | Schedule: '+ str(complete) + '%\033[0m'
-                    sys.stdout.write('\r'+str(msg))
-                    sys.stdout.flush()
-
-                def bruteStart(self):
-                    gevent_list = []
-                    for j in range(500):
-                        gev = gevent.spawn(self.bruteMain)
-                        gevent_list.append(gev)
-                    gevent.joinall(gevent_list)
-
             try:
-                brutePorts(getStrIp).bruteStart()
+                with futures.ThreadPoolExecutor(max_workers=maxthread) as executor:
+                    fs={executor.submit(port_scan, getStrIp, port):port for port in ports}
+                    answer={res.result():port for res,port in tqdm.tqdm(fs.items())}
+                    for i in answer:
+                        if i:
+                            allDict['ports'].append(str(answer[i]))
                 flag11 = True
                 print('\n'+"\033[1;34m[*] 完成获取端口信息, 共"+str(len(allDict['ports']))+"条数据!!\033[0m")
             except Exception as e:
@@ -580,7 +536,7 @@ class request:
                 print('\n'+'\033[1;31m[-] ip138获取端口开放信息失败!\033[0m')
             finally:
                 if (flag11 != True) and (times >= 1):
-                    self.getPorts()
+                    self.getPorts(ports, maxthread)
                 else:
                     times = tryTimes
 
