@@ -4,7 +4,7 @@
 # Version: 1.5
 
 from config import *
-import argparse, sys, ipaddress
+import argparse, sys, ipaddress, os
 import dominate, socket
 from dominate.tags import *
 import requests
@@ -223,6 +223,8 @@ def processData(allDict):
 
 # 生成html文件报告
 def all2HTML(url, allDict):
+    if not os.path.exists('output'):
+        os.mkdir('output')
     processData(allDict)
     doc = dominate.document(title='webscan_report')
 
