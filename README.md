@@ -30,6 +30,7 @@ pip3 install -r requirements.txt
 
 ```python
 >>python3 main.py -u http://www.xxx.com
+>>python3 main.py -u 123.123.123.123 --ports 21,22,23-8080 # 可以直接输入IP扫描端口，自动判断是否为IP
 >>python3 main.py -f url.txt
 >>python3 main.py -u http://www.xxx.com -p http://127.0.0.1:8080
 ```
