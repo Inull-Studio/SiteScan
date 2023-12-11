@@ -70,11 +70,14 @@ class request:
         try:
             r = requests.get(url=url_ip)
             r1_ip = r.json()["data"]["list"][0]["ip"]
-            print(r1_ip)
             url_ipInfo = "http://api.qqsuu.cn/api/dm-ipquery?ip={}".format(r1_ip)
             r2 = requests.get(url=url_ipInfo)
             tmp = r2.json()
-            r1_addr = tmp["data"]["country"]+'-'+tmp["data"]["province"]+'-'+tmp["data"]["city"]+'-'+tmp["data"]["district"]+'-'+tmp["data"]["isp"]
+            if r2.json()['code'] == 250:
+                r2 = requests.get(f'https://api.qqsuu.cn/api/dm-iplocation?ip={r1_ip}')
+                r1_addr = r2.json()['country']+'-'+r2.json()['province']+'-'+r2.json()['city']+'-'+r2.json()['isp']
+            else:
+                r1_addr = tmp["data"]["country"]+'-'+tmp["data"]["province"]+'-'+tmp["data"]["city"]+'-'+tmp["data"]["district"]+'-'+tmp["data"]["isp"]
             flag1 = True
             result.append(r1_ip+'::'+r1_addr)
             allDict['nowIP'] += result
