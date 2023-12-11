@@ -3,7 +3,6 @@
 # Version: 1.5
 
 # 引入模块、包部分
-from lib2to3.pygram import python_grammar_no_print_statement
 from request import *   # 获取返回内容
 from common import *
 from threading import Thread
@@ -49,7 +48,7 @@ def clearAll():
 
 
 # 多线程解决批查询(暂未实现，不稳定)
-def startMainThread(ip_url, ports, maxthread):
+def startMainThread(ip_url, ports, maxthread, proxy):
     ''' 判断网址是否有误 '''    ## 可改进地方 ##
     test = processUrl(ip_url)
     if test == []:
@@ -62,8 +61,9 @@ def startMainThread(ip_url, ports, maxthread):
         print('\033[1;35m[-] 检测 {} 为IP地址!\033[0m'.format(url))
         allDict['nowIP'].append(url+'::')
         request(url).pangZhan()
-        request(url).getPorts(ports, maxthread)
+        request(url).getPorts(ports, maxthread, proxy)
     elif isAlive(url):  # 检测用户输入网址是否有效
+        print('\033[1;35m[-] 检测 {} 为URL地址!\033[0m'.format(url))
         main(url, subDomain, ports, maxthread)
     else:
         print('\033[1;35m[-] 当前网址 {0} 不可访问, 尝试根域名信息查询!!\033[0m'.format(url))
@@ -86,7 +86,7 @@ def main(url, subDomain, ports, maxthread):
 
     """ 入口一: 域名资产清查"""
     # 1.进入<domain2ip函数>获取当前url的ip解析及粗略地理位置
-    t1 = request(url).domain2ip()
+    t1 = request(url).domain2ip
     t1_1 = Thread(target=t1)
     tasks.append(t1_1)
     # 2.进入<IP138函数>获取备案、子域名、历史ip绑定信息
@@ -157,7 +157,7 @@ def main(url, subDomain, ports, maxthread):
     t12_1 = Thread(target = t12)
     tasks.append(t12_1)
     # 2.进入<getPorts函数>获取网站开发端口信息
-    t13 = request(url).getPorts(ports, maxthread)
+    t13 = request(url).getPorts(ports, maxthread, proxy)
     t13_1 = Thread(target=t13)
     tasks.append(t13_1)
 
@@ -174,6 +174,11 @@ if __name__ == '__main__':
     ports = default_ports
     args = parse_args()
     maxthread = default_thread
+    if args.proxy:
+        proxy = args.proxy.split(':')
+        proxy[1] = int(proxy[1])
+        proxy = tuple(proxy)
+        proxies['http'] = args.proxy
     if args.url:
         urlList.append(args.url)
     if args.ports:
@@ -203,6 +208,6 @@ if __name__ == '__main__':
         maxthread = args.thread
     start = time.time()
     for ip_url in urlList:
-        startMainThread(ip_url, ports, maxthread)
+        startMainThread(ip_url, ports, maxthread, proxy)
     end = time.time()
     print("\033[1;36m[*] 本次检测共消耗时间:{:.2f}s\033[0m".format(end - start))

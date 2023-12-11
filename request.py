@@ -36,7 +36,6 @@ class request:
                 url=Domain,
                 headers=header,
                 timeout=timeout,
-                proxies=self.proxy,
                 allow_redirects=allow_redirects,
                 verify=allow_ssl_verify
             )
@@ -53,7 +52,6 @@ class request:
                 headers=header,
                 data=data,
                 timeout=timeout,
-                proxies=self.proxy,
                 allow_redirects=allow_redirects,
                 verify=allow_ssl_verify
             )
@@ -72,6 +70,7 @@ class request:
         try:
             r = requests.get(url=url_ip)
             r1_ip = r.json()["data"]["list"][0]["ip"]
+            print(r1_ip)
             url_ipInfo = "http://api.qqsuu.cn/api/dm-ipquery?ip={}".format(r1_ip)
             r2 = requests.get(url=url_ipInfo)
             tmp = r2.json()
@@ -101,7 +100,7 @@ class request:
         url = site + self.url
         print('[*] 正在通过myssl.com判断网站是否存在CDN......')
         try:
-            r = requests.get(url=url, headers=header, timeout=40, proxies=self.proxy, allow_redirects=allow_redirects, verify=allow_ssl_verify)
+            r = requests.get(url=url, headers=header, timeout=40, allow_redirects=allow_redirects, verify=allow_ssl_verify)
             data = json.loads(r.text)["data"]
             if len(data) > 1:
                 cdnFlag = True
@@ -340,7 +339,7 @@ class request:
         print("[*] 正在通过chaziyu.com收集子域名......")
         url = site + self.subdomain + '/'
         try:
-            r = requests.get(url=url, proxies=proxies, headers=header)
+            r = requests.get(url=url, headers=header)
             r1 = re.findall('target="_blank">(.*)</a>', r.text)
             for i in r1:
                 if self.subdomain in i:
@@ -482,13 +481,14 @@ class request:
 
     # Step11: 获取ip下的旁站获取
     def pangZhan(self):
+        print('[*] 正在进行旁站信息查询......')
         if not cdnFlag:
             global times
             flag2 = False
             header = headers('ipchaxun.com')
+            print(allDict['nowIP'])
             strIp = allDict['nowIP'][0].split("::")[0]
             url = f'https://ipchaxun.com/{strIp}/'
-            print('[*] 正在进行旁站信息查询......')
             try:
                 r = self.get(url, header)
                 r1 = re.findall('<div id="J_domain" data-token=".*">((?:.|\n)*?)</div>', r)
@@ -513,7 +513,7 @@ class request:
 
 
     # Step12: 获取网站开放端口信息
-    def getPorts(self, ports:list[int], maxthread):
+    def getPorts(self, ports:list[int], maxthread, proxy):
         if not cdnFlag:
             global times
             answer = dict()
@@ -522,11 +522,12 @@ class request:
             try:
                 with futures.ThreadPoolExecutor(max_workers=maxthread) as executor:
                     print(f'[*] 正在探测端口开放情况(时间稍长) {maxthread}线程......')
-                    fs={executor.submit(port_scan, getStrIp, port):port for port in ports}
+                    fs={executor.submit(port_scan, getStrIp, port, proxy):port for port in ports}
                     answer={port:res.result() for res,port in tqdm.tqdm(fs.items())}
+                    sorted(answer)
                     for i in answer:
                         if answer[i]:
-                            allDict['ports'].append(str(i))
+                            allDict['ports'].append(i)
                 flag11 = True
                 print('\n'+"\033[1;34m[*] 完成获取端口信息, 共"+str(len(allDict['ports']))+"条数据!!\033[0m")
             except Exception as e:

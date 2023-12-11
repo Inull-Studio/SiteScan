@@ -3,7 +3,6 @@
 # Author:kracer
 # Version: 1.5
 
-import sys
 
 # 请求包的头部
 def headers(host):
@@ -23,17 +22,12 @@ allow_redirects = True
 
 
 # 超时时间
-timeout = 10
+timeout = 5
 
 
 # 是否开启代理
-try:
-    inputList = sys.argv[1:]
-    index = inputList.index('-p')
-    proxy = inputList[index+1]
-except:
-    proxy = ''
-proxies = {'http': proxy}
+proxy = tuple()
+proxies = dict()
 
 
 # 是否开启https服务器的证书校验

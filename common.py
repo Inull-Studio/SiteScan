@@ -130,13 +130,18 @@ def processUrl(url):
 # 判断该网站是否存活
 def isAlive(url):
     header = headers(url)
+    times = 0
     url1 = 'http://'+url
+    url2 = 'https://'+url
     try:
-        r = requests.get(url=url1, headers=header, timeout=10, proxies=proxies, verify=False).text
-        return True
+        requests.get(url=url1, headers=header, timeout=10, proxies=proxies, verify=False).text
+        requests.get(url=url2, headers=header, timeout=10, proxies=proxies, verify=False).text
     except Exception as e:
+        times += 1
+    if times == 2:
         return False
-
+    else:
+        return True
 # 判断是否为IP地址
 def isIP(ip):
     try:
@@ -360,13 +365,30 @@ def all2HTML(url, allDict):
         f.write(doc.render())
         print("\033[1;34m[*] 检测报告位置: output/{0}_report.html!!\033[0m \n".format(url))
 
-def port_scan(host, port):
+def port_scan(host, port, proxy=()):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # if proxy:
+        #     s = create_proxy((host,port), proxy)
         s.settimeout(timeout)
         s.connect((host, port))
+        s.send(b'Vol\r\n')
         s.close()
         return True
     except:
         s.close()
         return False
+
+def create_proxy(address, proxy_address):
+    # 创建代理连接
+    proxy_socket = socket.create_connection(proxy_address)
+    # 发送 CONNECT 请求，告知代理要连接的目标地址和端口
+    target_host, target_port = address
+    request = f"CONNECT {target_host}:{target_port} HTTP/1.1\r\nHost: {target_host}\r\n\r\n"
+    proxy_socket.sendall(request.encode())
+    # 接收代理的响应
+    response = proxy_socket.recv(4096).decode()
+    if "200 Connection established" not in response:
+        raise Exception(f"Failed to establish connection through proxy. Response: {response}")
+    # 返回通过代理建立的连接
+    return proxy_socket
