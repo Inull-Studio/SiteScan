@@ -520,6 +520,8 @@ class request:
             global times
             answer = dict()
             flag11 = False
+            if not allDict['nowIP']:
+                return
             getStrIp = allDict['nowIP'][0].split("::")[0]
             try:
                 with futures.ThreadPoolExecutor(max_workers=maxthread) as executor:

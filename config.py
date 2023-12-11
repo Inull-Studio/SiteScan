@@ -35,7 +35,7 @@ allow_ssl_verify = False
 
 
 # 网络错误后重新发包的次数
-tryTimes = 3
+tryTimes = 2
 
 
 # google搜索过程中的提取量
