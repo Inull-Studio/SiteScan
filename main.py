@@ -86,7 +86,7 @@ def main(url, subDomain, ports, maxthread):
 
     """ 入口一: 域名资产清查"""
     # 1.进入<domain2ip函数>获取当前url的ip解析及粗略地理位置
-    t1 = request(url).domain2ip
+    t1 = request(url).domain2ip()
     t1_1 = Thread(target=t1)
     tasks.append(t1_1)
     # 2.进入<IP138函数>获取备案、子域名、历史ip绑定信息
@@ -110,7 +110,7 @@ def main(url, subDomain, ports, maxthread):
     t6_1 = Thread(target=t6)
     tasks.append(t6_1)
     # 7.进入<isCDN函数>判断是否存在CDN信息
-    t7 = request(url).isCDN
+    t7 = request(url).isCDN()
     t7_1 = Thread(target=t7)
     tasks.append(t7_1)
 
