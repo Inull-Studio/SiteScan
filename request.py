@@ -512,22 +512,21 @@ class request:
                     times = tryTimes
 
 
-    # Step12: wlphp.com的api获取网站开发端口信息
+    # Step12: 获取网站开放端口信息
     def getPorts(self, ports:list[int], maxthread):
         if not cdnFlag:
             global times
-            complete=0.0
+            answer = dict()
             flag11 = False
             getStrIp = allDict['nowIP'][0].split("::")[0]
-            result = []
-            print('[*] 正在探测端口开放情况(时间稍长)......')
             try:
                 with futures.ThreadPoolExecutor(max_workers=maxthread) as executor:
+                    print(f'[*] 正在探测端口开放情况(时间稍长) {maxthread}线程......')
                     fs={executor.submit(port_scan, getStrIp, port):port for port in ports}
-                    answer={res.result():port for res,port in tqdm.tqdm(fs.items())}
+                    answer={port:res.result() for res,port in tqdm.tqdm(fs.items())}
                     for i in answer:
-                        if i:
-                            allDict['ports'].append(str(answer[i]))
+                        if answer[i]:
+                            allDict['ports'].append(str(i))
                 flag11 = True
                 print('\n'+"\033[1;34m[*] 完成获取端口信息, 共"+str(len(allDict['ports']))+"条数据!!\033[0m")
             except Exception as e:
@@ -539,5 +538,3 @@ class request:
                     self.getPorts(ports, maxthread)
                 else:
                     times = tryTimes
-
-

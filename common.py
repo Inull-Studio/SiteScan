@@ -362,12 +362,11 @@ def all2HTML(url, allDict):
 
 def port_scan(host, port):
     try:
-        s = socket.socket()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(timeout)
         s.connect((host, port))
-        s.send(b'Violent\r\n')
+        s.close()
         return True
     except:
-        return False
-    finally:
         s.close()
+        return False

@@ -58,13 +58,13 @@ def startMainThread(ip_url, ports, maxthread):
     ''' 正确进入主函数查询 '''
     url = processUrl(ip_url)[0]
     subDomain = processUrl(ip_url)[-1]
-    if isAlive(url):  # 检测用户输入网址是否有效
-        main(url, subDomain, ports, maxthread)
-    elif isIP(url): # 检测是否为IP地址
+    if isIP(url): # 检测是否为IP地址
         print('\033[1;35m[-] 检测 {} 为IP地址!\033[0m'.format(url))
         allDict['nowIP'].append(url+'::')
         request(url).pangZhan()
         request(url).getPorts(ports, maxthread)
+    elif isAlive(url):  # 检测用户输入网址是否有效
+        main(url, subDomain, ports, maxthread)
     else:
         print('\033[1;35m[-] 当前网址 {0} 不可访问, 尝试根域名信息查询!!\033[0m'.format(url))
         request(subDomain).IP138()
@@ -177,6 +177,7 @@ if __name__ == '__main__':
     if args.url:
         urlList.append(args.url)
     if args.ports:
+        ports = []
         if ',' in args.ports:
             tmp_p = args.ports.split(',')
             for p in tmp_p:
@@ -205,7 +206,3 @@ if __name__ == '__main__':
         startMainThread(ip_url, ports, maxthread)
     end = time.time()
     print("\033[1;36m[*] 本次检测共消耗时间:{:.2f}s\033[0m".format(end - start))
-
-
-
-
