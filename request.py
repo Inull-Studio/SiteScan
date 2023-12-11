@@ -486,7 +486,9 @@ class request:
             global times
             flag2 = False
             header = headers('ipchaxun.com')
-            print(allDict['nowIP'])
+            if not allDict['nowIP']:
+                print('\033[1;31m[-] 旁站信息查询失败!\033[0m')
+                return
             strIp = allDict['nowIP'][0].split("::")[0]
             url = f'https://ipchaxun.com/{strIp}/'
             try:
@@ -536,6 +538,6 @@ class request:
                 print('\n'+'\033[1;31m[-] ip138获取端口开放信息失败!\033[0m')
             finally:
                 if (flag11 != True) and (times >= 1):
-                    self.getPorts(ports, maxthread)
+                    self.getPorts(ports, maxthread, proxy)
                 else:
                     times = tryTimes

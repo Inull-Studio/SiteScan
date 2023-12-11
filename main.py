@@ -110,7 +110,7 @@ def main(url, subDomain, ports, maxthread):
     t6_1 = Thread(target=t6)
     tasks.append(t6_1)
     # 7.进入<isCDN函数>判断是否存在CDN信息
-    t7 = request(url).isCDN()
+    t7 = request(url).isCDN
     t7_1 = Thread(target=t7)
     tasks.append(t7_1)
 
