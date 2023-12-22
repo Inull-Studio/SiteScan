@@ -124,9 +124,9 @@ def main(url, subDomain, ports, maxthread):
     t9_1 = Thread(target=t9)
     tasks.append(t9_1)
     # 3.进入<GoogleHacking>函数 查找js文件及提取子域名
-    t10 = request(url).googleHack()
-    t10_1 = Thread(target=t10)
-    tasks.append(t10_1)
+    # t10 = request(url).googleHack()
+    # t10_1 = Thread(target=t10)
+    # tasks.append(t10_1)
     # 4.进入<wafw00f>函数 侦探网站的waf
 
     def mainDetect():

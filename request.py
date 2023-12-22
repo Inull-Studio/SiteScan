@@ -16,7 +16,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 #定义的常量
-allDict = {'nowIP': [], 'domain': [], 'ports': [], 'whois': [], 'beiAn': [], 'framework': [[], {}, {}], 'urlPATH': [], 'isCDN': [], 'pangZhan': [], 'historyIP': [], 'error': []}
+allDict = {'nowIP': [], 'domain': [], 'ports': [], 'whois': [], 'beiAn': [], 'framework': [[], [], {}], 'urlPATH': [], 'isCDN': [], 'pangZhan': [], 'historyIP': [], 'error': []}
 times = tryTimes
 cdnFlag = False
 
@@ -39,7 +39,7 @@ class request:
                 allow_redirects=allow_redirects,
                 verify=allow_ssl_verify
             )
-            return result.text
+            return result
         except Exception as e:
             return e
 
@@ -101,7 +101,7 @@ class request:
         result = []
         site = 'https://myssl.com/api/v1/tools/cdn_check?domain='
         url = site + self.url
-        print('[*] 正在通过myssl.com判断网站是否存在CDN......')
+        print('[*] 正在通过myssl.com判断网站是否存在CDN，时间稍长......')
         try:
             r = requests.get(url=url, headers=header, timeout=40, allow_redirects=allow_redirects, verify=allow_ssl_verify)
             data = json.loads(r.text)["data"]
@@ -137,6 +137,8 @@ class request:
             '''ip138的ip解析功能'''
             try:
                 r_ip = self.get(url_ip, header)    # ip的解析请求
+                if isinstance(r_ip, requests.Response):
+                    r_ip= r_ip.text
                 r1_ip_date = re.findall('class="date"\>(.*?)\</span\>', r_ip)
                 r1_ip_content = re.findall('target="_blank"\>(.*?)\</a\>\n</p\>', r_ip)
                 flag3_1 = True
@@ -159,6 +161,8 @@ class request:
             '''ip138的子域名功能'''
             try:
                 r_domain = self.get(url_domain, header)  #子域名的解析请求
+                if isinstance(r_domain, requests.Response):
+                    r_domain= r_domain.text
                 r1_domain = re.findall('target="_blank"\>(.*?)\</a\>\</p\>', r_domain)
                 flag3_2 = True
                 allDict['domain'] = r1_domain
@@ -177,6 +181,8 @@ class request:
             '''ip138的备案功能'''
             try:
                 r_beian = self.get(url_beian, header)  #备案的解析请求
+                if isinstance(r_beian, requests.Response):
+                    r_beian = r_beian.text
                 r1_beian_date = re.findall('class="date">\n(.*?)</span>', r_beian)
                 r1_beian_content = re.findall('target="_blank">(.*?)</a>\n</p>', r_beian)
                 flag3_3 = True
@@ -278,6 +284,8 @@ class request:
         suffix = self.url.split('.')[-1]  #获取域名的后缀
         try:
             r = self.get(url, header)
+            if isinstance(r, requests.Response):
+                r = r.text
             r1 = re.findall(suffix+'</TD>\n    <TD>(.*?)</TD>\n    <TD><A', r)
             flag7 = True
             for i in r1:
@@ -297,6 +305,7 @@ class request:
         finally:
             if (flag7 != True) and (times >= 1):
                 self.getCrtDomain()
+
             else:
                 times = tryTimes
 
@@ -312,6 +321,8 @@ class request:
         url = site + self.url
         try:
             r = self.get(url, header)
+            if isinstance(r, requests.Response):
+                r = r.text
             try:
                 datas = json.loads(r)['subdomains']
             except Exception as e:
@@ -366,23 +377,32 @@ class request:
     def whatWeb(self):
         global times
         flag4 = False
-        header = headers('www.whatweb.net')
+        header = headers(self.url)
         site = 'https://www.whatweb.net/whatweb.php'
         result = []
+        cms_result = []
         data = {'target': self.url}
         print('[*] 正在进行网站的架构信息查询......')
         try:
-            r = self.post(site, header, data)
-            if r != '':
-                r1 = r.rstrip('\n')
-                result = r1.split(', ')
-                result[0] = result[0].split(' ')[-1]
+            r = self.get(f'http://{self.url}', header)
+            try:
+                robot = self.get(f'http://{self.url}/robots.txt', header)
+            except:
+                pass
+            for header in r.headers:
+                if 'X-Powered-By' in header:
+                    result.append(f'{r.headers[header]}')
+                if 'Server' in header:
+                    result.append(f'{r.headers[header]}')
+            if 'wp' in robot.text:
+                cms_result.append('WordPress')
             flag4 = True
             allDict['framework'][0] += result
-            print('\033[1;34m[*] 完成网站的架构信息查询, 共'+str(len(result)-2)+'条数据!!\033[0m')
+            allDict['framework'][1] += cms_result
+            print('\033[1;34m[*] 完成网站的架构信息查询, 共'+str(len(result) + len(cms_result))+'条数据!!\033[0m')
         except Exception as e:
             times -= 1
-            allDict['error'].append(self.url+'-->'+'whatweb获取网站的架构信息失败!'+'-->'+str(e))
+            allDict['error'].append(self.url+'-->'+'whatweb获取网站的架构信息失败!'+'-->' + repr(e))
             print('\033[1;31m[-] 网站的架构信息查询失败!\033[0m')
         finally:
             if (flag4 != True) and (times >= 1):
@@ -420,6 +440,8 @@ class request:
         print('[*] 正在通过GoogleHack收集url路径......')
         try:
             r = self.get(site, header)
+            if isinstance(r, requests.Response):
+                r = r.text
             num0 = re.findall('id=\"result-stats\"\>(.*?)\<', r)  #获取一共有多少条
             if num0 != []:
                 num1 = re.findall(' (.*?) ', num0[0])[0]
@@ -431,6 +453,8 @@ class request:
                 for i in range((int(num1)//10)+1):
                     site1 = f'https://search.ahnu.cf/search?q=site%3A%22{self.url}%22'+'&start={0}'.format(i*10)
                     r = self.get(site1, header)
+                    if isinstance(r, requests.Response):
+                        r = r.text
                     soup = bs(r, 'lxml')
                     data = soup.find_all(name='a')
                     for i in data:
@@ -496,6 +520,8 @@ class request:
             url = f'https://ipchaxun.com/{strIp}/'
             try:
                 r = self.get(url, header)
+                if isinstance(r, requests.Response):
+                    r = r.text
                 r1 = re.findall('<div id="J_domain" data-token=".*">((?:.|\n)*?)</div>', r)
                 resultDate = re.findall('"date">(.*?)</span>', str(r1))
                 resultUrl = re.findall('"_blank">(.*?)</a>', str(r1))
@@ -544,5 +570,6 @@ class request:
             finally:
                 if (flag11 != True) and (times >= 1):
                     self.getPorts(ports, maxthread, proxy)
+
                 else:
                     times = tryTimes

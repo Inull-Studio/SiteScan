@@ -207,8 +207,8 @@ def processData(allDict):
     if framework[0] == []:
         framework[0] = ['空', '空']
     cms = framework[1]
-    if cms == {}:
-        cms = {'空': '空'}
+    if cms == []:
+        cms = ['空', '空']
     waf = framework[2]
     if waf == {}:
         waf = {'waf': '没有侦测到waf'}
@@ -335,8 +335,8 @@ def all2HTML(url, allDict):
         '''网站的CMS架构信息----cms'''
         with table(cls="table table-responsive table-bordered table-hover").add(tbody()):
             caption("网址的CMS解析", cls="text-center text-info bg-success")
-            for k, v in cms.items():
-                tr(td('{0}'.format(k), align="center"), td('{0}'.format(v), align="center"))
+            for v in cms:
+                tr(td('{0}'.format('cms'), align="center"), td('{0}'.format(v), align="center"))
 
         br()
 
@@ -361,7 +361,7 @@ def all2HTML(url, allDict):
         br()
         br()
 
-    with open('output/{0}_report.html'.format(url), 'w', encoding='utf-8') as f:
+    with open('output/{0}_report.html'.format(url.replace(':', '_')), 'w', encoding='utf-8') as f:
         f.write(doc.render())
         print("\033[1;34m[*] 检测报告位置: output/{0}_report.html!!\033[0m \n".format(url))
 
