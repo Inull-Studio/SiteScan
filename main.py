@@ -3,14 +3,13 @@
 # Version: 1.5
 
 # 引入模块、包部分
+import warnings
 from request import *   # 获取返回内容
 from common import *
 from threading import Thread
 from colorama import init
 init(autoreset=True)  # 让终端输出字体变色效果只对当前输出起作用
-import warnings
 warnings.filterwarnings("ignore")
-
 
 
 # 定义的常量、变量
@@ -49,7 +48,7 @@ def clearAll():
 
 # 多线程解决批查询(暂未实现，不稳定)
 def startMainThread(ip_url, ports, maxthread, proxy):
-    ''' 判断网址是否有误 '''    ## 可改进地方 ##
+    ''' 判断网址是否有误 '''  # 可改进地方 ##
     test = processUrl(ip_url)
     if test == []:
         print('\033[1;31m[-] 网址输入有误，请检查后再试！\033[0m')
@@ -57,7 +56,7 @@ def startMainThread(ip_url, ports, maxthread, proxy):
     ''' 正确进入主函数查询 '''
     url = processUrl(ip_url)[0]
     subDomain = processUrl(ip_url)[-1]
-    if isIP(url): # 检测是否为IP地址
+    if isIP(url):  # 检测是否为IP地址
         print('\033[1;35m[-] 检测 {} 为IP地址!\033[0m'.format(url))
         allDict['nowIP'].append(url+'::')
         request(url).pangZhan()
@@ -82,7 +81,8 @@ def startMainThread(ip_url, ports, maxthread, proxy):
 # 主函数入口
 def main(url, subDomain, ports, maxthread):
     tasks = []
-    print('[+] ============ 网址：{0} 检测任务开启, 预估需要3~5min ============'.format(url))
+    print(
+        '[+] ============ 网址：{0} 检测任务开启, 预估需要3~5min ============'.format(url))
 
     """ 入口一: 域名资产清查"""
     # 1.进入<domain2ip函数>获取当前url的ip解析及粗略地理位置
@@ -114,7 +114,6 @@ def main(url, subDomain, ports, maxthread):
     t7_1 = Thread(target=t7)
     tasks.append(t7_1)
 
-
     """ 入口二: 网站资产清查 """
     # 1.进入<whatweb函数>获取网站的架构信息
     t8 = request(url).whatWeb()
@@ -129,6 +128,7 @@ def main(url, subDomain, ports, maxthread):
     t10_1 = Thread(target=t10)
     tasks.append(t10_1)
     # 4.进入<wafw00f>函数 侦探网站的waf
+
     def mainDetect():
         domain = allDict['urlPATH']
         keyURL_list = []
@@ -145,16 +145,16 @@ def main(url, subDomain, ports, maxthread):
             request(url).detectWaf()
             if len(domain) > 0:
                 request(domain[0]).detectWaf()
-        print("\033[1;34m[*] 完成网站waf信息侦测, 共"+str(len(allDict['framework'][2]))+"条数据!!\033[0m")
+        print(
+            "\033[1;34m[*] 完成网站waf信息侦测, 共" + str(len(allDict['framework'][2]))+"条数据!!\033[0m")
     t11 = mainDetect()
     t11_1 = Thread(target=t11)
     tasks.append(t11_1)
 
-
     """ 入口三: 不存在CDN下网站IP资产清查 """
     # 1.进入<PangZhan函数>获取当前域名IP下的同服务器网站
     t12 = request(url).pangZhan()
-    t12_1 = Thread(target = t12)
+    t12_1 = Thread(target=t12)
     tasks.append(t12_1)
     # 2.进入<getPorts函数>获取网站开发端口信息
     t13 = request(url).getPorts(ports, maxthread, proxy)
@@ -174,6 +174,9 @@ if __name__ == '__main__':
     ports = default_ports
     args = parse_args()
     maxthread = default_thread
+    if not args.url and not args.file:
+        print(not args.url, not args.file)
+        parse_args(['-h'])
     if args.proxy:
         proxy = args.proxy.split(':')
         proxy[1] = int(proxy[1])
@@ -187,11 +190,13 @@ if __name__ == '__main__':
             tmp_p = args.ports.split(',')
             for p in tmp_p:
                 if '-' in p:
-                    ports.extend([x for x in range(int(p.split('-')[0]), int(p.split('-')[1]) + 1)])
+                    ports.extend(
+                        [x for x in range(int(p.split('-')[0]), int(p.split('-')[1]) + 1)])
                 else:
                     ports.append(int(p))
         elif '-' in args.ports:
-            ports = [x for x in range(int(args.ports.split('-')[0]), int(args.ports.split('-')[1]) + 1)]
+            ports = [x for x in range(int(args.ports.split(
+                '-')[0]), int(args.ports.split('-')[1]) + 1)]
         else:
             ports.append(int(args.ports))
     if args.file:

@@ -13,7 +13,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 # 帮助说明函数定义
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(epilog='\tExample: \r\npython3 ' + sys.argv[0] + " -u http://www.google.com")
     # parser.add_argument("-h", "--help", help="show this help message and exit")
     parser.add_argument("-u", "--url", help="The website to scan")
@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument("-f", "--file", help="Scanning the address in the file")
     parser.add_argument('--ports', help='ports to scan examples: 80,443,8000-99000')
     parser.add_argument('-t', '--thread', type=int, help='max threads')
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 # 预处理用户输入的URL
