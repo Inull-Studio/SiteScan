@@ -26,7 +26,7 @@ timeout = 5
 
 
 # 是否开启代理
-proxy = tuple()
+proxy = list()
 proxies = dict()
 
 

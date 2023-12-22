@@ -134,8 +134,8 @@ def isAlive(url):
     url1 = 'http://'+url
     url2 = 'https://'+url
     try:
-        requests.get(url=url1, headers=header, timeout=10, proxies=proxies, verify=False).text
-        requests.get(url=url2, headers=header, timeout=10, proxies=proxies, verify=False).text
+        r = requests.get(url=url1, headers=header, timeout=10, proxies=proxies, verify=False).text
+        r = requests.get(url=url2, headers=header, timeout=10, proxies=proxies, verify=False).text
     except Exception as e:
         times += 1
     if times == 2:

@@ -175,13 +175,11 @@ if __name__ == '__main__':
     args = parse_args()
     maxthread = default_thread
     if not args.url and not args.file:
-        print(not args.url, not args.file)
         parse_args(['-h'])
     if args.proxy:
-        proxy = args.proxy.split(':')
-        proxy[1] = int(proxy[1])
-        proxy = tuple(proxy)
-        proxies['http'] = args.proxy
+        tmp_p = args.proxy.split(':')
+        proxy = tmp_p[1], int(tmp_p[-1])
+        proxies[tmp_p[0]] = args.proxy
     if args.url:
         urlList.append(args.url)
     if args.ports:
