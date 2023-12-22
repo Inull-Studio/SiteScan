@@ -72,7 +72,7 @@ def startMainThread(ip_url, ports, maxthread, proxy):
         request(subDomain).getCrtDomain()
         request(subDomain).Chaziyu()
         request(subDomain).virusDomain()
-        request(subDomain).googleHack()
+        # request(subDomain).googleHack()
         print('\033[1;34m[-] 根域名 {0} 信息查询完毕!!\033[0m'.format(subDomain))
     print('[*] 网址：{0} 所有检测任务完成, 开始生成检测报告......'.format(url))
     all2HTML(url, allDict)
@@ -125,9 +125,9 @@ def main(url, subDomain, ports, maxthread):
     t9_1 = Thread(target=t9)
     tasks.append(t9_1)
     # 3.进入<GoogleHacking>函数 查找js文件及提取子域名
-    t10 = request(url).googleHack()
-    t10_1 = Thread(target=t10)
-    tasks.append(t10_1)
+    # t10 = request(url).googleHack()
+    # t10_1 = Thread(target=t10)
+    # tasks.append(t10_1)
     # 4.进入<wafw00f>函数 侦探网站的waf
     def mainDetect():
         domain = allDict['urlPATH']
