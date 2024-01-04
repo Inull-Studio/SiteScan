@@ -8,7 +8,7 @@ from common import *
 from threading import Thread
 from colorama import init
 init(autoreset=True)  # 让终端输出字体变色效果只对当前输出起作用
-import warnings
+import warnings, signal
 warnings.filterwarnings("ignore")
 
 
@@ -169,6 +169,7 @@ def main(url, subDomain, ports, maxthread):
 
 # 最终执行函数
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     print(logo)
     urlList = []
     ports = default_ports
