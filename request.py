@@ -85,7 +85,7 @@ class request:
         except Exception as e:
             times -= 1
             allDict['error'].append(self.url+'-->'+'domain2ip解析错误!'+'-->'+str(e))
-            print('\033[1;31m[-] url解析查询失败!\033[0m')
+            print_error('[-] url解析查询失败!')
         finally:
             if (flag1 != True) and (times >= 1):
                 self.domain2ip()
@@ -107,14 +107,14 @@ class request:
             data = json.loads(r.text)["data"]
             if len(data) > 1:
                 cdnFlag = True
-                print("\033[1;31m[!] 注意该域名下存在CND，将停止该IP下的资产检测！\033[0m")
+                print(colorama.Fore.YELLOW + "[!] 注意该域名下存在CND，将停止该IP下的资产检测！" + colorama.Style.RESET_ALL)
             flag12 = True
             allDict['isCDN'] += data   #返回的形式为 [{}]
-            print("\033[1;34m[*] 完成CDN查询, 共"+str(len(data))+"条数据!!\033[0m")
+            print(colorama.Fore.GREEN + "[*] 完成CDN查询, 共"+str(len(data))+"条数据!!" + colorama.Style.RESET_ALL)
         except Exception as e:
             times -= 1
             allDict['error'].append(self.url+'-->'+'myssl.com查询CDN失败!'+'-->'+str(e))
-            print('\033[1;31m[-] myssl.com查询CDN信息失败!\033[0m')
+            print_error('[-] myssl.com查询CDN信息失败!')
         finally:
             if (flag12 != True) and (times >= 1):
                 self.isCDN()
@@ -125,8 +125,8 @@ class request:
     # Step3: IP138查询函数，获取域名当前ip地址历史解析、子域名、备案、whois信息
     def IP138(self):
         global times
-        header = headers('site.ip138.com')
-        site = "http://site.ip138.com/"
+        header = headers('ipchaxun.com')
+        site = "http://ipchaxun.com/"
         ip_list, beian_list, domain_list, whois_list = [], [], [], []
         url_ip = site+self.url+'/'
         url_domain = site+self.subdomain+"/domain.htm"
@@ -148,7 +148,7 @@ class request:
             except Exception as e:
                 times -= 1
                 allDict['error'].append(self.url+'-->'+'ip138获取地址ip信息失败!'+'-->'+str(e))
-                print('\033[1;31m[~] IP138地址ip解析失败!\033[0m')
+                print_error('[~] IP138地址ip解析失败!')
             finally:
                 if (flag3_1 != True) and (times >= 1):
                     historyIp(times)
@@ -223,8 +223,8 @@ class request:
                     times = tryTimes
         print("[*] 正在进行ip138查询......")
         historyIp(times)
-        domain(times)
-        beian(times)
+        # domain(times)
+        # beian(times)
         isWho(times)
         print("\033[1;34m[*] IP138所有信息查询完成!!\033[0m")
 
@@ -251,7 +251,7 @@ class request:
                     beian_list += ["该域名无备案信息!"]
                     allDict['beiAn'] += beian_list
             else:
-                print("\033[1;31m[!] 请求失败!请于beianx.cn注册api免费100次额度，config.py文件中更新key值后再试~\033[0m")
+                print_error("[!] 请求失败!请于beianx.cn注册api免费100次额度，config.py文件中更新key值后再试~")
             flag5 = True
             print('\033[1;34m[*] 完成所有备案信息查询完成, 共'+str(len(beian_list))+'条数据!!\033[0m')
         except Exception as e:
@@ -379,7 +379,7 @@ class request:
                 result[0] = result[0].split(' ')[-1]
             flag4 = True
             allDict['framework'][0] += result
-            print('\033[1;34m[*] 完成网站的架构信息查询, 共'+str(len(result)-2)+'条数据!!\033[0m')
+            print('\033[1;34m[*] 完成网站的架构信息查询, 共'+str(len(result))+'条数据!!\033[0m')
         except Exception as e:
             times -= 1
             allDict['error'].append(self.url+'-->'+'whatweb获取网站的架构信息失败!'+'-->'+str(e))

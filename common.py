@@ -10,6 +10,7 @@ from dominate.tags import *
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+import colorama
 
 
 # 帮助说明函数定义
@@ -392,3 +393,10 @@ def create_proxy(address, proxy_address):
         raise Exception(f"Failed to establish connection through proxy. Response: {response}")
     # 返回通过代理建立的连接
     return proxy_socket
+
+def print_error(*values: object,
+    sep: str = " ",
+    end: str = "\n",
+    file: str = None,
+    flush: bool = False):
+    print(colorama.Fore.RED + sep.join(values) + colorama.Style.RESET_ALL, end=end, file=file, flush=flush)
