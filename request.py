@@ -366,8 +366,8 @@ class request:
     def whatWeb(self):
         global times
         flag4 = False
-        header = headers('whatweb.net')
-        site = 'https://whatweb.net/whatweb.php'
+        header = headers('www.whatweb.net')
+        site = 'https://www.whatweb.net/whatweb.php'
         result = []
         data = {'target': self.url}
         print('[*] 正在进行网站的架构信息查询......')
