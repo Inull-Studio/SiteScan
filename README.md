@@ -1,4 +1,4 @@
-<h1 align="center" >SiteScan</h1>
+<h1 align="center" >SiteScan 二开</h1>
 
 <h4 align="center" >渗透本质--信息收集</h3>
 <p align="center">
